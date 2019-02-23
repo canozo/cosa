@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
   }
 
   string line;
-  string key = argv[2];
   string outfilename;
+  string key = argv[2];
   ifstream indataset(argv[1]);
 
   if (!indataset.is_open()) {
@@ -39,10 +39,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (argc < 4) {
+  if (argc < 4 && (strcmp(argv[1], "dataset.txt") == 0)) {
+    outfilename = "result.txt";
+  } else if (argc < 4) {
     outfilename = "dataset.txt";
   } else if (strcmp(argv[1], argv[3]) == 0) {
-    cerr << "error: archivos de entrada y salida son el mismo\n";
+    cerr << "error: archivos de entrada y salida son el mismo (\"" << argv[1] << "\")\n";
     return 1;
   } else {
     outfilename = argv[3];
@@ -65,4 +67,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
