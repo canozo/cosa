@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    outdataset << data[key] << '\n';
+    outdataset << data[key].get<string>() << '\n';
   }
 
   cout << "data guardada en \"" << outfilename << "\"\n";
