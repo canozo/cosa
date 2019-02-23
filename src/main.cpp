@@ -24,6 +24,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (error) {
+    cerr << "args: " << argv[0] << " <archivo entrada> <key> [<archivo salida>]\n";
+    cerr << "ej: " << argv[0] << " entrada.json key salida.txt\n";
     return 1;
   }
 
@@ -39,6 +41,9 @@ int main(int argc, char *argv[]) {
 
   if (argc < 4) {
     outfilename = "dataset.txt";
+  } else if (strcmp(argv[1], argv[3]) == 0) {
+    cerr << "error: archivos de entrada y salida son el mismo\n";
+    return 1;
   } else {
     outfilename = argv[3];
   }
@@ -47,6 +52,12 @@ int main(int argc, char *argv[]) {
 
   while (getline(indataset, line)) {
     json data = json::parse(line);
+
+    if (data[key].is_null()) {
+      cerr << "error: key \"" << key << "\" no valida para todo json en \"" << argv[1] << "\"\n";
+      return 1;
+    }
+
     outdataset << data[key] << '\n';
   }
 
