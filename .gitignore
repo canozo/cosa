@@ -32,10 +32,7 @@
 *.app
 parser
 
-# Datasets
-dataset.*
-*.txt
-
+build/
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
