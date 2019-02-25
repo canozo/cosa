@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <cstdint>
 #include <nlohmann/json.hpp>
@@ -10,8 +11,10 @@ using std::cerr;
 using std::ifstream;
 using std::ofstream;
 using std::string;
+using std::stringstream;
 
-string outname(string, string);
+string tempname(string);
+string resname(string, uint64_t);
 
 int main(int argc, char *argv[]) {
   bool error = false;
@@ -48,8 +51,8 @@ int main(int argc, char *argv[]) {
     limit = strtoull(argv[3], NULL, 10) * 1000000;
   }
 
-  string outfilename = outname(argv[1], strlimit);
-  ofstream outdataset(outfilename);
+  string outfilename = tempname(argv[1]);
+  ofstream outdataset(outfilename + "_temp.txt");
 
   string line;
   while (getline(indataset, line) && size <= limit) {
@@ -70,18 +73,27 @@ int main(int argc, char *argv[]) {
     size += text.size() + 1;
   }
 
-  cout << "data guardada en \"" << outfilename << "\", total de " << size << " bytes\n";
+  string resfile = resname(outfilename, size);
+  rename((outfilename + "_temp.txt").c_str(), resfile.c_str());
+
+  cout << "data guardada en \"" << resfile << "\", total de " << size << " bytes\n";
 
   return 0;
 }
 
-string outname(string infilename, string strlimit) {
+string tempname(string infilename) {
   // dataset.json => dataset.txt
   int hasta = infilename.find('.');
   if (hasta == string::npos) {
     // no tiene punto
-    return infilename + "_" + strlimit + "MB.txt";
+    return infilename;
   }
   // si tiene punto
-  return infilename.substr(0, hasta) + "_" + strlimit + "MB.txt";
+  return infilename.substr(0, hasta);
+}
+
+string resname(string oldname, uint64_t size) {
+  stringstream result;
+  result << oldname << '_' << size / 1000000 << "MB.txt";
+  return result.str();
 }
