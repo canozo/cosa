@@ -98,12 +98,10 @@ string process(string text) {
     if (isspace(curr) && !cspace) {
       result << ' ';
     }
-    if (!isalpha(curr) && !isspace(curr) && cspace) {
-      pos += 1;
-    } else {
+    if (isalpha(curr) || isspace(curr) || !cspace) {
       cspace = isspace(curr);
-      pos += 1;
     }
+    pos += 1;
   }
   return result.str();
 }
