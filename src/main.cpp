@@ -94,6 +94,8 @@ string process(string text) {
   while ((curr = text[pos])) {
     if (isalpha(curr)) {
       result << (char) tolower(curr);
+    } else {
+      curr = ' ';
     }
     if (isspace(curr) && !cspace) {
       result << ' ';
