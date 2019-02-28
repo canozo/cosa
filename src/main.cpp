@@ -15,23 +15,11 @@ using std::stringstream;
 
 string tempname(string);
 string resname(string, uint64_t);
+string process(string);
 
 int main(int argc, char *argv[]) {
-  bool error = false;
-
-  if (argc < 2) {
-    cerr << "falta argumento: archivo de dataset (ej: \"dataset.json\")\n";
-    error = true;
-  }
-
   if (argc < 3) {
-    cerr << "falta argumento: key de dataset (ej: \"reviewText\")\n";
-    error = true;
-  }
-
-  if (error) {
-    cerr << "args: " << argv[0] << " <archivo entrada> <key> [<limite (MB)>]\n";
-    cerr << "ej: " << argv[0] << " entrada.json key 100\n";
+    cerr << "error, args: " << argv[0] << " <archivo entrada> <key> [<limite (MB)>]\n";
     return 1;
   }
 
@@ -68,7 +56,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    string text = data[key].get<string>();
+    string text = process(data[key].get<string>());
     outdataset << text << '\n';
     size += text.size() + 1;
   }
@@ -95,5 +83,27 @@ string tempname(string infilename) {
 string resname(string oldname, uint64_t size) {
   stringstream result;
   result << oldname << '_' << size / 1000000 << "MB.txt";
+  return result.str();
+}
+
+string process(string text) {
+  stringstream result;
+  bool cspace = false;
+  char curr;
+  int pos = 0;
+  while ((curr = text[pos])) {
+    if (isalpha(curr)) {
+      result << (char) tolower(curr);
+    }
+    if (isspace(curr) && !cspace) {
+      result << ' ';
+    }
+    if (!isalpha(curr) && !isspace(curr) && cspace) {
+      pos += 1;
+    } else {
+      cspace = isspace(curr);
+      pos += 1;
+    }
+  }
   return result.str();
 }
