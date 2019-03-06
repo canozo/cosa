@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 #include <cstdint>
+#include <vector>
+#include <algorithm>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -12,14 +14,16 @@ using std::ifstream;
 using std::ofstream;
 using std::string;
 using std::stringstream;
+using std::find;
+using std::vector;
 
 string tempname(string);
 string resname(string, uint64_t);
-string process(string);
+string process(vector<string>, string);
 
 int main(int argc, char *argv[]) {
   if (argc < 3) {
-    cerr << "error, args: " << argv[0] << " <archivo entrada> <key> [<limite (MB)>]\n";
+    cerr << "error, args: " << argv[0] << " <archivo entrada> <key> [<limite (MB)> <stopwords>]\n";
     return 1;
   }
 
@@ -39,8 +43,22 @@ int main(int argc, char *argv[]) {
     limit = strtoull(argv[3], NULL, 10) * 1000000;
   }
 
+  string swfile = "../stopwords/default.txt";
+  ifstream instopwords;
+
+  if (argc >= 5) {
+    swfile = argv[4];
+  }
+  instopwords.open(swfile, ifstream::in);
+
+  string stopword;
+  vector<string> stopwords;
+  while (getline(instopwords, stopword)) {
+    stopwords.push_back(" " + stopword + " ");
+  }
+
   string outfilename = tempname(argv[1]);
-  ofstream outdataset(outfilename + "_temp.txt");
+  ofstream outdataset(outfilename + ".temp");
 
   string line;
   while (getline(indataset, line) && size <= limit) {
@@ -56,13 +74,13 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    string text = process(data[key].get<string>());
+    string text = process(stopwords, data[key].get<string>());
     outdataset << text << '\n';
     size += text.size() + 1;
   }
 
   string resfile = resname(outfilename, size);
-  rename((outfilename + "_temp.txt").c_str(), resfile.c_str());
+  rename((outfilename + ".temp").c_str(), resfile.c_str());
 
   cout << "data guardada en \"" << resfile << "\", total de " << size << " bytes\n";
 
@@ -70,14 +88,10 @@ int main(int argc, char *argv[]) {
 }
 
 string tempname(string infilename) {
-  // dataset.json => dataset.txt
-  int hasta = infilename.find('.');
-  if (hasta == string::npos) {
-    // no tiene punto
-    return infilename;
-  }
-  // si tiene punto
-  return infilename.substr(0, hasta);
+  int desde = infilename.find_last_of('/');
+  int hasta = infilename.find_last_of('.');
+  desde += 1;
+  return infilename.substr(desde, hasta - desde);
 }
 
 string resname(string oldname, uint64_t size) {
@@ -86,24 +100,35 @@ string resname(string oldname, uint64_t size) {
   return result.str();
 }
 
-string process(string text) {
-  stringstream result;
+string process(vector<string> stopwords, string text) {
+  stringstream line;
   bool cspace = false;
   char curr;
   int pos = 0;
+
+  // procesar caracteres especiales, espacios repetidos, etc
   while ((curr = text[pos])) {
-    if (isalpha(curr)) {
-      result << (char) tolower(curr);
+    if (isalpha(curr) || curr == '\'') {
+      line << (char) tolower(curr);
     } else {
       curr = ' ';
     }
     if (isspace(curr) && !cspace) {
-      result << ' ';
+      line << ' ';
     }
     if (isalpha(curr) || isspace(curr) || !cspace) {
       cspace = isspace(curr);
     }
     pos += 1;
   }
-  return result.str();
+
+  // borrar stopwords
+  string processed = line.str();
+  for (int i = 0; i < stopwords.size(); i += 1) {
+    string::size_type find_pos;
+    while ((find_pos = processed.find(stopwords[i])) != string::npos) {
+      processed.erase(find_pos, stopwords[i].length() - 1);
+    }
+  }
+  return processed;
 }
