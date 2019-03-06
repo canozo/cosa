@@ -28,8 +28,8 @@ int main(int argc, char *argv[]) {
   }
 
   uint64_t size = 0;
-  uint64_t limit = 500000000;
-  string strlimit = "500";
+  uint64_t limit = 1000000000;
+  string strlimit = "1000";
   string key = argv[2];
   ifstream indataset(argv[1]);
 
@@ -82,15 +82,13 @@ int main(int argc, char *argv[]) {
   string resfile = resname(outfilename, size);
   rename((outfilename + ".temp").c_str(), resfile.c_str());
 
-  cout << "data guardada en \"" << resfile << "\", total de " << size << " bytes\n";
-
+  cout << "data guardada en \"" << resfile << "\"\n";
   return 0;
 }
 
 string tempname(string infilename) {
-  int desde = infilename.find_last_of('/');
+  int desde = infilename.find_last_of('/') + 1;
   int hasta = infilename.find_last_of('.');
-  desde += 1;
   return infilename.substr(desde, hasta - desde);
 }
 
