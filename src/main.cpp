@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include <algorithm>
+#include <regex>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -16,6 +17,9 @@ using std::string;
 using std::stringstream;
 using std::find;
 using std::vector;
+using std::transform;
+using std::regex;
+using std::regex_replace;
 
 string tempname(string);
 string resname(string, uint64_t);
@@ -99,34 +103,13 @@ string resname(string oldname, uint64_t size) {
 }
 
 string process(vector<string> stopwords, string text) {
-  stringstream line;
-  bool cspace = false;
-  char curr;
-  int pos = 0;
-
-  // procesar caracteres especiales, espacios repetidos, etc
-  while ((curr = text[pos])) {
-    if (isalpha(curr) || curr == '\'') {
-      line << (char) tolower(curr);
-    } else {
-      curr = ' ';
-    }
-    if (isspace(curr) && !cspace) {
-      line << ' ';
-    }
-    if (isalpha(curr) || isspace(curr) || !cspace) {
-      cspace = isspace(curr);
-    }
-    pos += 1;
-  }
-
-  // borrar stopwords
-  string processed = line.str();
+  string processed = regex_replace(text, regex(R"([^a-zA-Z0-9 '])"), "");
   for (int i = 0; i < stopwords.size(); i += 1) {
     string::size_type find_pos;
     while ((find_pos = processed.find(stopwords[i])) != string::npos) {
       processed.erase(find_pos, stopwords[i].length() - 1);
     }
   }
+  transform(processed.begin(), processed.end(), processed.begin(), ::tolower);
   return processed;
 }
