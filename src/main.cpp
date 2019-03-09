@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   string stopword;
   vector<string> stopwords;
   while (getline(instopwords, stopword)) {
-    stopwords.push_back(" " + stopword + " ");
+    stopwords.push_back(' ' + stopword + ' ');
   }
 
   string outfilename = tempname(argv[1]);
@@ -105,6 +105,7 @@ string resname(string oldname, uint64_t size) {
 string process(vector<string> stopwords, string text) {
   string processed = regex_replace(text, regex(R"([^a-zA-Z0-9 '])"), "");
   transform(processed.begin(), processed.end(), processed.begin(), ::tolower);
+  processed = ' ' + processed;
   string::size_type find_pos;
   for (int i = 0; i < stopwords.size(); i += 1) {
     while ((find_pos = processed.find(stopwords[i])) != string::npos) {
