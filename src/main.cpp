@@ -104,12 +104,12 @@ string resname(string oldname, uint64_t size) {
 
 string process(vector<string> stopwords, string text) {
   string processed = regex_replace(text, regex(R"([^a-zA-Z0-9 '])"), "");
+  transform(processed.begin(), processed.end(), processed.begin(), ::tolower);
+  string::size_type find_pos;
   for (int i = 0; i < stopwords.size(); i += 1) {
-    string::size_type find_pos;
     while ((find_pos = processed.find(stopwords[i])) != string::npos) {
       processed.erase(find_pos, stopwords[i].length() - 1);
     }
   }
-  transform(processed.begin(), processed.end(), processed.begin(), ::tolower);
   return processed;
 }
