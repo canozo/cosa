@@ -17,18 +17,18 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class Sort {
+public class SortSF {
   public static void main(String[] args) throws Exception {
     Path inputPath = new Path(args[0]);
     Path outputDir = new Path(args[1]);
 
     Configuration conf = new Configuration(true);
 
-    Job job = Job.getInstance(conf, "wordcount sort two frequency");
-    job.setJarByClass(Sort.class);
+    Job job = Job.getInstance(conf, "wordcount sort single frequency");
+    job.setJarByClass(SortSF.class);
 
-    job.setMapperClass(Sort.MapTask.class);
-    job.setReducerClass(Sort.ReduceTask.class);
+    job.setMapperClass(SortSF.MapTask.class);
+    job.setReducerClass(SortSF.ReduceTask.class);
     job.setNumReduceTasks(1);
 
     job.setMapOutputKeyClass(IntWritable.class);
@@ -63,14 +63,12 @@ public class Sort {
   public static class MapTask extends Mapper<LongWritable, Text, IntWritable, Text> {
     public void map(LongWritable key, Text value, Context context) throws java.io.IOException, InterruptedException {
       StringTokenizer itr = new StringTokenizer(value.toString());
-
       String first = itr.nextToken();
-      String second = itr.nextToken();
       int cvalue = Integer.parseInt(itr.nextToken());
       IntWritable count = new IntWritable(cvalue);
 
       if (cvalue > 5000) {
-        context.write(count, new Text(first + ' ' + second));
+        context.write(count, new Text(first));
       }
     }
   }

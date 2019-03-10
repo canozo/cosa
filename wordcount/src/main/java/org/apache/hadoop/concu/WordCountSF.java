@@ -14,15 +14,15 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class WordCount {
+public class WordCountSF {
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
     if (otherArgs.length < 2) {
       System.exit(2);
     }
-    Job job = Job.getInstance(conf, "word count two frequency");
-    job.setJarByClass(WordCount.class);
+    Job job = Job.getInstance(conf, "word count single frequency");
+    job.setJarByClass(WordCountSF.class);
 
     job.setMapperClass(TokenizerMapper.class);
     job.setCombinerClass(IntSumReducer.class);
@@ -47,18 +47,11 @@ public class WordCount {
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
       StringTokenizer itr = new StringTokenizer(value.toString());
 
-      String first = "";
-      String second = "";
-
-      if (itr.hasMoreTokens()) {
-        first = itr.nextToken();
-      }
-
+      String first;
       while (itr.hasMoreTokens()) {
-        second = itr.nextToken();
-        word.set(first + ' ' + second);
+        first = itr.nextToken();
+        word.set(first);
         context.write(word, one);
-        first = second;
       }
     }
   }
